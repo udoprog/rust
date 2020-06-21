@@ -338,13 +338,13 @@ impl Span {
     }
 
     /// Gets the starting line/column in the source file for this span.
-    #[unstable(feature = "proc_macro_span", issue = "54725")]
+    #[stable(feature = "proc_macro_span_start", since = "1.46.0")]
     pub fn start(&self) -> LineColumn {
         self.0.start()
     }
 
     /// Gets the ending line/column in the source file for this span.
-    #[unstable(feature = "proc_macro_span", issue = "54725")]
+    #[stable(feature = "proc_macro_span_end", since = "1.46.0")]
     pub fn end(&self) -> LineColumn {
         self.0.end()
     }
@@ -404,31 +404,31 @@ impl fmt::Debug for Span {
 }
 
 /// A line-column pair representing the start or end of a `Span`.
-#[unstable(feature = "proc_macro_span", issue = "54725")]
+#[stable(feature = "proc_macro_span_line_column", issue = "54725")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct LineColumn {
     /// The 1-indexed line in the source file on which the span starts or ends (inclusive).
-    #[unstable(feature = "proc_macro_span", issue = "54725")]
+    #[stable(feature = "proc_macro_span_line_column", since = "1.46.0")]
     pub line: usize,
     /// The 0-indexed column (in UTF-8 characters) in the source file on which
     /// the span starts or ends (inclusive).
-    #[unstable(feature = "proc_macro_span", issue = "54725")]
+    #[stable(feature = "proc_macro_span_line_column", since = "1.46.0")]
     pub column: usize,
 }
 
-#[unstable(feature = "proc_macro_span", issue = "54725")]
+#[stable(feature = "proc_macro_span_line_column", since = "1.46.0")]
 impl !Send for LineColumn {}
-#[unstable(feature = "proc_macro_span", issue = "54725")]
+#[stable(feature = "proc_macro_span_line_column", since = "1.46.0")]
 impl !Sync for LineColumn {}
 
-#[unstable(feature = "proc_macro_span", issue = "54725")]
+#[stable(feature = "proc_macro_span_line_column", since = "1.46.0")]
 impl Ord for LineColumn {
     fn cmp(&self, other: &Self) -> Ordering {
         self.line.cmp(&other.line).then(self.column.cmp(&other.column))
     }
 }
 
-#[unstable(feature = "proc_macro_span", issue = "54725")]
+#[stable(feature = "proc_macro_span_line_column", since = "1.46.0")]
 impl PartialOrd for LineColumn {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
