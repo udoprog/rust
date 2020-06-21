@@ -338,13 +338,13 @@ impl Span {
     }
 
     /// Gets the starting line/column in the source file for this span.
-    #[unstable(feature = "proc_macro_span", issue = "54725")]
+    #[stable(feature = "proc_macro_span_start", since = "1.46.0")]
     pub fn start(&self) -> LineColumn {
         self.0.start()
     }
 
     /// Gets the ending line/column in the source file for this span.
-    #[unstable(feature = "proc_macro_span", issue = "54725")]
+    #[stable(feature = "proc_macro_span_end", since = "1.46.0")]
     pub fn end(&self) -> LineColumn {
         self.0.end()
     }
