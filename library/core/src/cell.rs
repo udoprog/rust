@@ -1278,17 +1278,20 @@ impl<'b, T: ?Sized> Ref<'b, T> {
     ///
     /// let c = RefCell::new(vec![1, 2, 3]);
     /// let b1: Ref<Vec<u32>> = c.borrow();
-    /// let b2: Option<Ref<u32>> = Ref::try_map(b1, |v| v.get(1));
-    /// assert_eq!(b2.as_deref(), Some(&2))
+    /// let b2: Result<Ref<u32>, _> = Ref::try_map(b1, |v| v.get(1));
+    /// assert_eq!(*b2.unwrap(), 2);
     /// ```
     #[unstable(feature = "cell_try_map", reason = "recently added", issue = "none")]
     #[inline]
-    pub fn try_map<U: ?Sized, F>(orig: Ref<'b, T>, f: F) -> Option<Ref<'b, U>>
+    pub fn try_map<U: ?Sized, F>(orig: Ref<'b, T>, f: F) -> Result<Ref<'b, U>, Self>
     where
         F: FnOnce(&T) -> Option<&U>,
     {
-        let value = f(orig.value)?;
-        Some(Ref { value, borrow: orig.borrow })
+        let value = match f(orig.value) {
+            Some(value) => value,
+            None => return Err(orig),
+        };
+        Ok(Ref { value, borrow: orig.borrow })
     }
 
     /// Splits a `Ref` into multiple `Ref`s for different components of the
@@ -1421,9 +1424,9 @@ impl<'b, T: ?Sized> RefMut<'b, T> {
     ///
     /// {
     ///     let b1: RefMut<Vec<u32>> = c.borrow_mut();
-    ///     let mut b2: Option<RefMut<u32>> = RefMut::try_map(b1, |v| v.get_mut(1));
+    ///     let mut b2: Result<RefMut<u32>, _> = RefMut::try_map(b1, |v| v.get_mut(1));
     ///
-    ///     if let Some(mut b2) = b2 {
+    ///     if let Ok(mut b2) = b2 {
     ///         *b2 += 2;
     ///     }
     /// }
@@ -1432,14 +1435,18 @@ impl<'b, T: ?Sized> RefMut<'b, T> {
     /// ```
     #[unstable(feature = "cell_try_map", reason = "recently added", issue = "none")]
     #[inline]
-    pub fn try_map<U: ?Sized, F>(orig: RefMut<'b, T>, f: F) -> Option<RefMut<'b, U>>
+    pub fn try_map<U: ?Sized, F>(orig: RefMut<'b, T>, f: F) -> Result<RefMut<'b, U>, Self>
     where
         F: FnOnce(&mut T) -> Option<&mut U>,
     {
         // FIXME(nll-rfc#40): fix borrow-check
         let RefMut { value, borrow } = orig;
-        let value = f(value)?;
-        Some(RefMut { value, borrow })
+        let value = value as *mut T;
+        let value = match f(unsafe { &mut *value }) {
+            Some(value) => value,
+            None => return Err(RefMut { value: unsafe { &mut *value }, borrow }),
+        };
+        Ok(RefMut { value, borrow })
     }
 
     /// Splits a `RefMut` into multiple `RefMut`s for different components of the
